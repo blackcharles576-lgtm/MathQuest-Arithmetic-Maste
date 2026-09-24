@@ -1,3 +1,1230 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathQuest: Arithmetic Master</title>
+    <meta name="theme-color" content="#17122f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Fredoka', 'Inter', sans-serif; }
+        .scratch-canvas { touch-action: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Header Bar -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 shadow-md">
+        <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="app.showScreen('dashboard')">
+                <span class="text-3xl">🚀</span>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide text-indigo-400">MathQuest</h1>
+                    <p class="text-xs text-slate-400">Arithmetic Master</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar & User Info -->
+            <div class="flex items-center gap-3">
+                <div id="user-badge" class="hidden sm:flex items-center gap-1 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-700/60 text-xs text-indigo-200">
+                    👤 <span id="header-student-name" class="font-bold">Cadet</span>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-700 text-sm">
+                    <div class="flex items-center gap-1 text-amber-400 font-semibold" title="Total XP">
+                        <span>⚡</span> <span id="header-xp">0</span> XP
+                    </div>
+                    <div class="h-4 w-[1px] bg-slate-700"></div>
+                    <div class="flex items-center gap-1 text-emerald-400 font-semibold text-xs bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/50" id="header-rank">
+                        Novice
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-center">
+
+        <!-- SCREEN 0: LOGIN / STUDENT PROFILE -->
+        <div id="screen-login" class="max-w-md mx-auto w-full bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6">
+            <div class="text-center">
+                <span class="text-5xl">🎓</span>
+                <h2 class="text-2xl font-bold text-white mt-2">Cadet Registration</h2>
+                <p class="text-slate-300 text-xs mt-1">Enter your details to track progress and save scores to the leaderboard.</p>
+            </div>
+            <form onsubmit="app.handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name</label>
+                    <input type="text" id="login-name" required placeholder="e.g. Juan Dela Cruz" 
+                        class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Grade Level</label>
+                    <select id="login-grade" class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-sm">
+                        <option value="Grade 7">Grade 7</option>
+                        <option value="Grade 8">Grade 8</option>
+                        <option value="Grade 9">Grade 9</option>
+                        <option value="Grade 10">Grade 10</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Section</label>
+                    <input type="text" id="login-section" required placeholder="e.g. St. Matthew / Emerald" 
+                        class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                    Start Math Quest ➔
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 1: DASHBOARD / STAGES -->
+        <div id="screen-dashboard" class="space-y-6 hidden">
+            <div class="bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-indigo-700/50 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="absolute right-4 -bottom-6 text-8xl opacity-10 pointer-events-none">📐</div>
+                <h2 id="welcome-banner" class="text-2xl font-bold mb-2 text-indigo-200">Welcome back!</h2>
+                <p class="text-slate-300 text-sm mb-4 max-w-xl">Master arithmetic across 10 levels with step-by-step carrying, borrowing, and strict decimal standards!</p>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="app.startDailyChallenge()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 font-bold px-4 py-2.5 rounded-xl shadow-lg transition transform active:scale-95 text-slate-950 text-sm flex items-center gap-2">
+                        <span>⭐</span> Daily Mix Practice
+                    </button>
+                    <button onclick="app.showLeaderboard()" class="bg-slate-800 hover:bg-slate-700 text-indigo-300 text-sm px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                        <span>🏆</span> Leaderboards
+                    </button>
+                    <button onclick="app.openGroupModal()" class="bg-purple-950 hover:bg-purple-900 text-purple-200 text-sm px-4 py-2.5 rounded-xl border border-purple-700 transition flex items-center gap-2">
+                        <span>👥</span> Group Activity Mode
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold mb-3 text-slate-200 flex items-center gap-2">
+                    <span>🗺️</span> Progressive Learning Stages (Stages 1 to 10)
+                </h3>
+                <div id="stages-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Dynamic stages injected here -->
+                </div>
+
+             <div class="mt-6 bg-emerald-950/30 border border-emerald-800/60 rounded-2xl p-5 shadow-xl">
+                 <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                     <div>
+                         <h3 class="text-lg font-bold text-emerald-300 flex items-center gap-2">
+                             <span>✖️</span> Multiplication Practice
+                         </h3>
+                         <p class="text-xs text-slate-400 mt-1">Separate section • Stage 1 is open • Get 20/20 to unlock the next stage</p>
+                     </div>
+                     <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">UNLOCKED</span>
+                 </div>
+                 <div id="multiplication-stages-container" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+             </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 1.5: GROUP ACTIVITY CONFIG -->
+        <div id="screen-group-config" class="max-w-md mx-auto w-full bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-6 hidden">
+            <div class="text-center">
+                <span class="text-5xl">👥</span>
+                <h2 class="text-2xl font-bold text-white mt-2">Group Activity Setup</h2>
+                <p class="text-slate-300 text-xs mt-1">Enter how many members are in your group and input each name to generate simultaneous problem tracks.</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Number of Group Members (1 to 6)</label>
+                    <input type="number" id="group-count" min="1" max="6" value="2" onchange="app.renderMemberInputs()"
+                        class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Choose Group Stage</label>
+                    <select id="group-stage" class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-sm">
+                    </select>
+                    <p class="text-[11px] text-slate-500 mt-1">Only unlocked stages can be selected. Multiplication stages follow the same progression.</p>
+                </div>
+                <div id="member-inputs-container" class="space-y-2">
+                    <!-- Injected member name inputs -->
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="app.showScreen('dashboard')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl transition text-sm">
+                        Cancel
+                    </button>
+                    <button onclick="app.startGroupActivity()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition text-sm">
+                        Start Group Mode ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 1.6: GROUP ACTIVITY GAMEPLAY -->
+        <div id="screen-group-game" class="hidden flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-4">
+                <button onclick="app.showScreen('dashboard')" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-sm text-slate-300 border border-slate-700">
+                    ← Exit Group
+                </button>
+                <div class="text-center">
+                     <h3 class="font-bold text-purple-300 text-sm">Simultaneous Group Challenge</h3>
+                     <p id="group-stage-title" class="text-[10px] text-slate-400"></p>
+                 </div>
+                <div class="text-sm font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-800/40">
+                    Round <span id="group-round">1</span> of 20
+                </div>
+            </div>
+            <div id="group-tracks-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <!-- Dynamically rendered parallel tracks for each student -->
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAMEPLAY -->
+        <div id="screen-game" class="hidden flex flex-col items-center">
+            <!-- Game Top Nav -->
+            <div class="w-full flex justify-between items-center mb-4">
+                <button onclick="app.showScreen('dashboard')" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-sm text-slate-300 border border-slate-700 flex items-center gap-1 transition">
+                    ← Stages
+                </button>
+                <div class="text-center">
+                    <h3 id="game-stage-title" class="font-bold text-indigo-300 text-sm">Stage Title</h3>
+                    <p id="game-progress-text" class="text-xs text-slate-400">Question 1 of 5</p>
+                </div>
+                <div class="text-sm font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-800/40">
+                    Score: <span id="game-score">0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-800 h-2 rounded-full mb-6 overflow-hidden border border-slate-700">
+                <div id="game-progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-xl text-center relative">
+                <span id="question-tag" class="absolute top-4 right-4 text-xs font-semibold px-2.5 py-1 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800/60">Addition</span>
+
+                <!-- Problem Statement / Column View -->
+                <div id="problem-display" class="my-6">
+                    <!-- Dynamically rendered problem -->
+                </div>
+
+                <!-- Answer Input Form -->
+                <form id="answer-form" onsubmit="app.submitAnswer(event)" class="space-y-4">
+                    <div class="relative max-w-xs mx-auto">
+                        <input type="text" id="user-answer" autocomplete="off" autofocus placeholder="Enter exact answer..."
+                            class="w-full bg-slate-900 border-2 border-slate-600 focus:border-indigo-500 rounded-xl px-4 py-3 text-center text-xl font-bold text-white outline-none shadow-inner transition">
+                        <p class="text-[10px] text-slate-400 mt-1">For decimals, you must input precise decimal format (e.g. 12.50)</p>
+                    </div>
+                    <div class="flex gap-2 justify-center">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform active:scale-95 flex-1 max-w-xs">
+                            Submit Answer
+                        </button>
+                        <button type="button" onclick="app.toggleScratchpad()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-3 rounded-xl font-medium transition" title="Toggle Scratchpad">
+                            ✏️ Scratchpad
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Scratchpad Box (Expanded Height) -->
+                <div id="scratchpad-container" class="hidden mt-4 pt-4 border-t border-slate-700 text-left">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs text-slate-300 font-semibold flex items-center gap-1"><span>✏️</span> Expanded Scratchpad Canvas</span>
+                        <button type="button" onclick="app.clearScratchpad()" class="text-xs bg-rose-950/80 text-rose-300 border border-rose-800 px-2 py-1 rounded hover:bg-rose-900">Clear Canvas</button>
+                    </div>
+                    <div class="border-2 border-slate-600 rounded-xl bg-slate-950 overflow-hidden relative shadow-inner">
+                        <canvas id="scratch-canvas" class="scratch-canvas w-full h-80 cursor-crosshair"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: FEEDBACK / STEP-BY-STEP CORRECTION -->
+        <div id="screen-feedback" class="hidden flex flex-col items-center">
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-xl text-center space-y-4">
+                <div id="feedback-icon" class="text-6xl mb-2">🎉</div>
+                <h3 id="feedback-title" class="text-2xl font-bold text-white">Correct!</h3>
+                <p id="feedback-message" class="text-slate-300 text-sm">Great job! You calculated the correct result.</p>
+
+                <!-- Step by step explanation card -->
+                <div id="explanation-card" class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-4 text-left space-y-2">
+                    <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                        <span>💡</span> Step-by-Step Correction Guide
+                    </h4>
+                    <div id="explanation-content" class="text-sm text-slate-300 space-y-1">
+                        <!-- Breakdown text injected here -->
+                    </div>
+                </div>
+
+                <button onclick="app.nextQuestion()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                    Continue ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: STAGE COMPLETE -->
+        <div id="screen-complete" class="hidden flex flex-col items-center">
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-xl text-center space-y-6">
+                <div class="text-7xl">🏆</div>
+                <div>
+                    <h3 class="text-2xl font-bold text-amber-300">Stage Completed!</h3>
+                    <p class="text-slate-300 text-sm mt-1">You conquered this arithmetic challenge!</p>
+                    <p id="unlock-message" class="text-emerald-400 text-xs font-semibold mt-2"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-700">
+                    <div>
+                        <p class="text-xs text-slate-400">Correct Answers</p>
+                        <p id="summary-score" class="text-xl font-bold text-emerald-400">5 / 5</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">XP Earned</p>
+                        <p id="summary-xp" class="text-xl font-bold text-amber-400">+50 XP</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="app.showScreen('dashboard')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl transition">
+                        Back to Stages
+                    </button>
+                    <button onclick="app.restartStage()" id="next-stage-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg transition">
+                        Next Stage ➔
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: LEADERBOARD -->
+        <div id="screen-leaderboard" class="hidden flex flex-col items-center">
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 w-full max-w-lg shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <h3 class="text-xl font-bold text-amber-300 flex items-center gap-2"><span>🏆</span> Class Leaderboard</h3>
+                    <button onclick="app.showScreen('dashboard')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-200">Close</button>
+                </div>
+                <div id="leaderboard-list" class="space-y-2 max-h-72 overflow-y-auto">
+                    <!-- Injected leaderboard entries -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500">
+        MathQuest: Arithmetic Master &bull; 12 Progressive Stages &bull; 20 Questions per Stage &bull; Offline PWA
+    </footer>
+
+    <!-- Application Script -->
+    <script>
+        const soundEffect = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playCorrect() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } catch(e) {}
+            },
+            playWrong() {
+                try {
+                    this.init();
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } catch(e) {}
+            }
+        };
+
+        // 10 Progressive Stages Config
+        const STAGES = [
+            { id: 1, title: "Stage 1: 3-Digit Addition", desc: "Three-digit addition with carrying across multiple columns.", digitLevel: 3, type: "add_whole", difficulty: 1, unlocked: true },
+            { id: 2, title: "Stage 2: 3-Digit Subtraction", desc: "Three-digit subtraction with borrowing across columns.", digitLevel: 3, type: "sub_whole", difficulty: 2, unlocked: false },
+            { id: 3, title: "Stage 3: 3-Digit Division", desc: "Three-digit dividends with exact and progressively harder division.", digitLevel: 3, type: "div_whole", difficulty: 3, unlocked: false },
+            { id: 4, title: "Stage 4: Hard Addition & Subtraction", desc: "Larger three-digit calculations with multiple carries and borrows.", digitLevel: 3, type: "mixed_whole", difficulty: 4, unlocked: false },
+            { id: 5, title: "Stage 5: Hard Division", desc: "Three-digit division using increasingly challenging divisors.", digitLevel: 3, type: "div_hard", difficulty: 5, unlocked: false },
+            { id: 6, title: "Stage 6: Decimal Addition", desc: "Three-digit decimals with exact hundredths alignment.", digitLevel: 3, type: "add_decimal", difficulty: 6, unlocked: false },
+            { id: 7, title: "Stage 7: Decimal Subtraction", desc: "Three-digit decimals with borrowing and strict two-decimal formatting.", digitLevel: 3, type: "sub_decimal", difficulty: 7, unlocked: false },
+            { id: 8, title: "Stage 8: Mixed Arithmetic", desc: "A difficult combination of addition, subtraction, multiplication, and division.", digitLevel: 3, type: "mixed_whole_hard", difficulty: 8, unlocked: false },
+            { id: 9, title: "Stage 9: Mixed Decimal Arithmetic", desc: "Hard mixed operations involving three-digit decimal values.", digitLevel: 3, type: "mixed_decimal", difficulty: 9, unlocked: false },
+            { id: 10, title: "Stage 10: Ultimate Math Boss", desc: "The hardest challenge combining all major arithmetic skills.", digitLevel: 3, type: "boss", difficulty: 10, unlocked: false }
+        ];
+
+        const MULTIPLICATION_STAGES = [
+            { id: 101, title: "Multiplication 1: 1-Digit", desc: "Randomized multiplication using 1-digit factors.", digitLevel: 1, type: "mul_1digit", difficulty: 1, unlocked: true },
+            { id: 102, title: "Multiplication 2: 2-Digit", desc: "Randomized multiplication using 2-digit factors.", digitLevel: 2, type: "mul_2digit", difficulty: 2, unlocked: false },
+            { id: 103, title: "Multiplication 3: 3-Digit", desc: "Randomized multiplication using 3-digit factors.", digitLevel: 3, type: "mul_3digit", difficulty: 3, unlocked: false }
+        ];
+
+        const RANKS = [
+            { threshold: 0, title: "Novice" },
+            { threshold: 100, title: "Number Apprentice" },
+            { threshold: 300, title: "Digit Detective" },
+            { threshold: 600, title: "Arithmetic Ace" },
+            { threshold: 1000, title: "Master Calculator" },
+            { threshold: 1500, title: "Grand Math Wizard" }
+        ];
+
+        class MathApp {
+            constructor() {
+                this.user = { name: "", grade: "", section: "", xp: 0 };
+                this.currentStage = null;
+                this.questions = [];
+                this.currentIndex = 0;
+                this.score = 0;
+                this.currentQuestion = null;
+                this.groupMembers = [];
+                const selectedStageId = Number(document.getElementById('group-stage')?.value);
+                const allStages = [...STAGES, ...MULTIPLICATION_STAGES];
+                const selectedStage = allStages.find(s => s.id === selectedStageId && s.unlocked);
+                this.groupStage = selectedStage || this.groupStage || STAGES[0];
+
+                this.groupRound = 1;
+                this.groupData = {};
+                this.groupSubmitted = {};
+                this.groupSubmitted = {};
+                this.groupStage = STAGES[0];
+                this.loadUserData();
+                this.initScratchpad();
+            }
+
+            loadUserData() {
+                const saved = localStorage.getItem('mathquest_student_v3');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        this.user = data.user || this.user;
+                        if (data.multiplicationStages) {
+                             MULTIPLICATION_STAGES.forEach((s, idx) => {
+                                 if (data.multiplicationStages[idx]) s.unlocked = !!data.multiplicationStages[idx].unlocked;
+                             });
+                         }
+                         if (data.stages) {
+                            STAGES.forEach((s, idx) => {
+                                if (data.stages[idx]) s.unlocked = data.stages[idx].unlocked;
+                            });
+                        }
+                    } catch(e) {}
+                }
+                MULTIPLICATION_STAGES[0].unlocked = true;
+                STAGES[0].unlocked = true;
+                if (this.user.name) {
+                    this.showScreen('dashboard');
+                    this.updateHeaderStats();
+                } else {
+                    this.showScreen('login');
+                }
+            }
+
+            saveUserData() {
+                const data = {
+                    user: this.user,
+                    stages: STAGES.map(s => ({ unlocked: s.unlocked }))
+                };
+                localStorage.setItem('mathquest_student_v3', JSON.stringify(data));
+                this.updateLeaderboardRecord();
+                this.updateHeaderStats();
+            }
+
+            updateLeaderboardRecord() {
+                let lb = JSON.parse(localStorage.getItem('mathquest_leaderboard_v3') || '[]');
+                const existing = lb.find(item => item.name === this.user.name && item.section === this.user.section);
+                if (existing) {
+                    existing.xp = Math.max(existing.xp, this.user.xp);
+                } else {
+                    lb.push({ name: this.user.name, grade: this.user.grade, section: this.user.section, xp: this.user.xp });
+                }
+                lb.sort((a, b) => b.xp - a.xp);
+                localStorage.setItem('mathquest_leaderboard_v3', JSON.stringify(lb));
+            }
+
+            handleLogin(e) {
+                e.preventDefault();
+                const name = document.getElementById('login-name').value.trim();
+                const grade = document.getElementById('login-grade').value;
+                const section = document.getElementById('login-section').value.trim();
+                
+                if (!name || !section) return;
+
+                this.user.name = name;
+                this.user.grade = grade;
+                this.user.section = section;
+                this.saveUserData();
+                
+                document.getElementById('header-student-name').innerText = name;
+                document.getElementById('welcome-banner').innerText = `Welcome back, ${name} (${grade} - ${section})!`;
+                this.showScreen('dashboard');
+            }
+
+            updateHeaderStats() {
+                document.getElementById('header-xp').innerText = this.user.xp;
+                document.getElementById('header-student-name').innerText = this.user.name || 'Cadet';
+                if (this.user.name) {
+                    document.getElementById('user-badge').classList.remove('hidden');
+                    document.getElementById('welcome-banner').innerText = `Welcome back, ${this.user.name} (${this.user.grade} - ${this.user.section})!`;
+                }
+
+                let currentRank = RANKS[0].title;
+                for (let r of RANKS) {
+                    if (this.user.xp >= r.threshold) currentRank = r.title;
+                }
+                document.getElementById('header-rank').innerText = currentRank;
+            }
+
+            showScreen(screenId) {
+                ['login', 'dashboard', 'game', 'feedback', 'complete', 'leaderboard', 'teacher', 'group-config', 'group-game'].forEach(id => {
+                    const el = document.getElementById(`screen-${id}`);
+                    if (el) el.classList.add('hidden');
+                });
+                const target = document.getElementById(`screen-${screenId}`);
+                if (target) target.classList.remove('hidden');
+
+                if (screenId === 'dashboard') {
+                    this.renderStages();
+                    this.renderMultiplicationStages();
+                }
+                if (screenId === 'group-config') {
+                    this.renderGroupStageSelector();
+                    this.renderMemberInputs();
+                }
+            }
+
+            renderMultiplicationStages() {
+                const container = document.getElementById('multiplication-stages-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                MULTIPLICATION_STAGES.forEach((stage, index) => {
+                    const previous = index > 0 ? MULTIPLICATION_STAGES[index - 1] : null;
+                    const isUnlocked = index === 0 || !!stage.unlocked;
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-2xl border transition flex flex-col justify-between shadow-md ${
+                        isUnlocked
+                            ? 'border-emerald-800/70 bg-slate-900/70 hover:border-emerald-500'
+                            : 'border-slate-800 bg-slate-950/60 opacity-60'
+                    }`;
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                                    <span>${isUnlocked ? '✖️' : '🔒'}</span> ${stage.title}
+                                </h4>
+                                <span class="text-xs px-2 py-0.5 rounded ${
+                                    isUnlocked
+                                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-700'
+                                        : 'bg-slate-900 text-slate-500 border border-slate-700'
+                                }">${isUnlocked ? 'OPEN' : 'LOCKED'}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3">${stage.desc}</p>
+                            <p class="text-[10px] ${isUnlocked ? 'text-emerald-400' : 'text-slate-500'} mb-3">
+                                ${isUnlocked
+                                    ? '20 random questions • 5-minute timer'
+                                    : `Get 20/20 in ${previous ? previous.title : 'the previous stage'} to unlock`}
+                            </p>
+                        </div>
+                        ${
+                            isUnlocked
+                                ? `<button type="button" onclick="app.startStage(${stage.id})" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded-xl transition">Play Stage ${index + 1} ➜</button>`
+                                : `<button type="button" disabled class="w-full bg-slate-800 text-slate-500 text-xs font-bold py-2 rounded-xl cursor-not-allowed">🔒 Perfect previous stage first</button>`
+                        }
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            renderStages() {
+                const container = document.getElementById('stages-container');
+                container.innerHTML = '';
+
+                STAGES.forEach((stage) => {
+                    const card = document.createElement('div');
+                    card.className = `p-4 rounded-2xl border transition flex flex-col justify-between ${
+                        stage.unlocked 
+                            ? 'bg-slate-800/90 border-slate-700 hover:border-indigo-500 cursor-pointer shadow-md' 
+                            : 'bg-slate-900/60 border-slate-800 opacity-60 cursor-not-allowed'
+                    }`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                                    <span>${stage.unlocked ? '📖' : '🔒'}</span> ${stage.title}
+                                </h4>
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-900 text-indigo-300 border border-slate-700 font-medium">Stage ${stage.id}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3">${stage.desc}</p>
+                        </div>
+                        <div>
+                            ${stage.unlocked 
+                                ? `<button onclick="app.startStage(${stage.id})" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-xl transition">Start Stage ${stage.id}</button>`
+                                : `<span class="text-xs text-slate-500 font-medium">Locked (Complete previous stage)</span>`
+                            }
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            startStage(stageId) {
+                this.currentStage = [...STAGES, ...MULTIPLICATION_STAGES].find(s => s.id === stageId);
+                this.questions = this.generateQuestions(this.currentStage, 20);
+                this.currentIndex = 0;
+                this.score = 0;
+                this.showScreen('game');
+                this.loadQuestion();
+            }
+
+            startDailyChallenge() {
+                this.currentStage = { id: 99, title: "Daily Mix Practice", type: "mixed_decimal", digitLevel: 3 };
+                this.questions = this.generateQuestions(this.currentStage, 20);
+                this.currentIndex = 0;
+                this.score = 0;
+                this.showScreen('game');
+                this.loadQuestion();
+            }
+
+            generateQuestions(stage, count) {
+                let qList = [];
+                for (let i = 0; i < count; i++) {
+                    qList.push(this.createSingleQuestion(stage));
+                }
+                return qList;
+            }
+
+            createSingleQuestion(stage) {
+                const type = stage.type;
+                let num1, num2, answer, isAddition = true, isDecimal = false;
+                const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+                const threeDigit = () => rand(100, 999);
+
+                if (type === 'mul_1digit') {
+                    num1 = rand(1, 9);
+                    num2 = rand(1, 9);
+                    return { num1, num2, isAddition: false, answer: num1 * num2, isDecimal: false, displayType: '×' };
+                }
+                if (type === 'mul_2digit') {
+                    num1 = rand(10, 99);
+                    num2 = rand(10, 99);
+                    return { num1, num2, isAddition: false, answer: num1 * num2, isDecimal: false, displayType: '×' };
+                }
+                if (type === 'mul_3digit') {
+                    num1 = rand(100, 999);
+                    num2 = rand(100, 999);
+                    return { num1, num2, isAddition: false, answer: num1 * num2, isDecimal: false, displayType: '×' };
+                }
+
+                if (type === 'add_whole' || type === 'sub_whole') {
+                    isAddition = type === 'add_whole';
+                    num1 = threeDigit(); num2 = threeDigit();
+                    if (!isAddition && num2 > num1) [num1, num2] = [num2, num1];
+                    answer = isAddition ? num1 + num2 : num1 - num2;
+                } else if (type === 'div_whole' || type === 'div_hard') {
+                    const divisor = type === 'div_whole' ? rand(2, 9) : rand(2, 25);
+                    const quotient = type === 'div_whole' ? rand(12, 99) : rand(10, 250);
+                    num2 = divisor; num1 = divisor * quotient; answer = quotient; isAddition = false;
+                } else if (type === 'add_decimal' || type === 'sub_decimal') {
+                    isAddition = type === 'add_decimal'; isDecimal = true;
+                    num1 = Number((threeDigit() + rand(0, 99) / 100).toFixed(2));
+                    num2 = Number((rand(100, 999) + rand(0, 99) / 100).toFixed(2));
+                    if (!isAddition && num2 > num1) [num1, num2] = [num2, num1];
+                    answer = Number((isAddition ? num1 + num2 : num1 - num2).toFixed(2));
+                } else {
+                    const ops = type === 'boss' ? ['+', '-', '×', '÷'] : type === 'mixed_decimal' ? ['+', '-'] : ['+', '-', '×', '÷'];
+                    const op = ops[rand(0, ops.length - 1)];
+                    isAddition = op === '+';
+                    isDecimal = type === 'mixed_decimal' || (type === 'boss' && Math.random() > 0.65);
+                    if (op === '×') {
+                        num1 = threeDigit(); num2 = rand(12, type === 'boss' ? 99 : 75); answer = num1 * num2;
+                    } else if (op === '÷') {
+                        num2 = rand(2, type === 'boss' ? 30 : 20);
+                        const quotient = rand(20, type === 'boss' ? 300 : 150);
+                        num1 = num2 * quotient; answer = quotient;
+                    } else {
+                        num1 = isDecimal ? Number((threeDigit() + rand(0, 99) / 100).toFixed(2)) : threeDigit();
+                        num2 = isDecimal ? Number((rand(100, 999) + rand(0, 99) / 100).toFixed(2)) : threeDigit();
+                        if (op === '-' && num2 > num1) [num1, num2] = [num2, num1];
+                        answer = Number((op === '+' ? num1 + num2 : num1 - num2).toFixed(isDecimal ? 2 : 0));
+                    }
+                    return { num1, num2, isAddition, answer, isDecimal, displayType: op };
+                }
+                return { num1, num2, isAddition, answer, isDecimal, displayType: isAddition ? '+' : (type.includes('div') ? '÷' : '-') };
+            }
+
+            startTimer(seconds = 300) {
+                this.stopTimer();
+                this.timerSeconds = seconds;
+                this.updateTimerDisplay();
+                this.timerInterval = setInterval(() => {
+                    this.timerSeconds--;
+                    this.updateTimerDisplay();
+                    if (this.timerSeconds <= 0) {
+                        this.stopTimer();
+                        alert("Time is up! Your current score will be recorded.");
+                        this.finishStage(true);
+                    }
+                }, 1000);
+            }
+
+            stopTimer() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+            }
+
+            updateTimerDisplay() {
+                const el = document.getElementById('game-timer');
+                if (!el) return;
+                const mins = Math.floor(Math.max(0, this.timerSeconds) / 60);
+                const secs = Math.max(0, this.timerSeconds) % 60;
+                el.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                el.className = this.timerSeconds <= 30
+                    ? 'text-red-300 animate-pulse'
+                    : '';
+            }
+
+            loadQuestion() {
+                if (this.currentIndex >= this.questions.length) {
+                    this.finishStage();
+                    return;
+                }
+
+                this.currentQuestion = this.questions[this.currentIndex];
+                
+                document.getElementById('game-stage-title').innerText = this.currentStage.title;
+                document.getElementById('game-progress-text').innerText = `Question ${this.currentIndex + 1} of ${this.questions.length}`;
+                document.getElementById('game-score').innerText = this.score;
+                
+                const progressPct = ((this.currentIndex) / this.questions.length) * 100;
+                document.getElementById('game-progress-bar').style.width = `${progressPct}%`;
+                
+                document.getElementById('question-tag').innerText = this.currentQuestion.isAddition ? 'Addition' : 'Subtraction';
+
+                const display = document.getElementById('problem-display');
+                display.innerHTML = `
+                    <div class="inline-block font-mono text-3xl font-bold tracking-widest text-right space-y-1">
+                        <div class="text-slate-300">${this.currentQuestion.num1}</div>
+                        <div class="border-b-2 border-slate-500 pb-2 flex justify-between items-center gap-4">
+                            <span class="text-indigo-400">${this.currentQuestion.displayType}</span>
+                            <span>${this.currentQuestion.num2}</span>
+                        </div>
+                    </div>
+                `;
+
+                const input = document.getElementById('user-answer');
+                input.value = '';
+                input.placeholder = this.currentQuestion.isDecimal ? "Enter exact decimal (e.g. 145.50)" : "Enter answer...";
+                input.focus();
+            }
+
+            submitAnswer(e) {
+                e.preventDefault();
+                const rawInput = document.getElementById('user-answer').value.trim();
+                const inputVal = parseFloat(rawInput);
+                
+                if (isNaN(inputVal)) return;
+
+                // Strict decimal validation test
+                let isValidFormat = true;
+                if (this.currentQuestion.isDecimal) {
+                    if (!/^[-]?\d+\.\d{2}$/.test(rawInput)) {
+                        isValidFormat = false; // Must use exactly two decimal places
+                    }
+                }
+
+                const matchesAnswer = Math.abs(inputVal - this.currentQuestion.answer) < 0.001;
+                const isCorrect = matchesAnswer && isValidFormat;
+
+                if (isCorrect) {
+                    soundEffect.playCorrect();
+                    this.score++;
+                    this.showFeedback(true, isValidFormat ? "" : "format_error");
+                } else {
+                    soundEffect.playWrong();
+                    this.showFeedback(false, !isValidFormat ? "format_error" : "math_error");
+                }
+            }
+
+            showFeedback(isCorrect, errorType) {
+                this.stopTimer();
+                const screen = document.getElementById('screen-feedback');
+                ['dashboard', 'game', 'complete', 'login', 'leaderboard', 'teacher', 'group-config', 'group-game'].forEach(id => {
+                    const el = document.getElementById(`screen-${id}`);
+                    if (el) el.classList.add('hidden');
+                });
+                screen.classList.remove('hidden');
+
+                const icon = document.getElementById('feedback-icon');
+                const title = document.getElementById('feedback-title');
+                const msg = document.getElementById('feedback-message');
+                const expContent = document.getElementById('explanation-content');
+
+                if (isCorrect) {
+                    icon.innerText = '🎉';
+                    title.innerText = 'Correct!';
+                    title.className = 'text-2xl font-bold text-emerald-400';
+                    msg.innerText = 'Fantastic calculation! Place values and formatting are spot on.';
+                    expContent.innerHTML = `
+                        <p class="text-emerald-300 font-semibold">Result: ${this.currentQuestion.num1} ${this.currentQuestion.displayType} ${this.currentQuestion.num2} = ${this.currentQuestion.answer}</p>
+                        <p class="text-slate-400 text-xs mt-1">Computation aligned successfully.</p>
+                    `;
+                } else {
+                    icon.innerText = '💡';
+                    title.innerText = 'Correction Required!';
+                    title.className = 'text-2xl font-bold text-amber-400';
+                    
+                    if (errorType === 'format_error') {
+                        msg.innerText = `Strict formatting rule violated! Decimal questions require a decimal point format. Correct answer: ${this.currentQuestion.answer}`;
+                    } else {
+                        msg.innerText = `The correct answer was ${this.currentQuestion.answer}. Review the step-by-step breakdown below:`;
+                    }
+                    
+                    const q = this.currentQuestion;
+                    let breakdownHtml = `<p class="text-indigo-300 font-semibold">${q.num1} ${q.displayType} ${q.num2}</p>`;
+                    if (q.isAddition) {
+                        breakdownHtml += `
+                            <p class="text-xs text-slate-300 mt-1">&bull; <strong>Column Alignment:</strong> Align place values (and decimal points vertically if decimals).</p>
+                            <p class="text-xs text-slate-300">&bull; <strong>Carrying Rule:</strong> If sum in any column is 10 or greater, write down the units digit and <em>carry over</em> 1 to the next column on the left.</p>
+                            <p class="text-xs text-slate-300">&bull; <strong>Correct Total:</strong> <strong>${q.answer}</strong>.</p>
+                        `;
+                    } else {
+                        breakdownHtml += `
+                            <p class="text-xs text-slate-300 mt-1">&bull; <strong>Column Alignment:</strong> Align place values and decimal markers.</p>
+                            <p class="text-xs text-slate-300">&bull; <strong>Borrowing Rule:</strong> If top digit is smaller than bottom digit, <em>borrow</em> 1 from the adjacent left column (reducing it by 1 and adding 10 to current column).</p>
+                            <p class="text-xs text-slate-300">&bull; <strong>Correct Difference:</strong> <strong>${q.answer}</strong>.</p>
+                        `;
+                    }
+                    expContent.innerHTML = breakdownHtml;
+
+                    // Push a practice review question
+                    const replacementQ = this.createSingleQuestion(this.currentStage);
+                    this.questions.push(replacementQ);
+                }
+            }
+
+            nextQuestion() {
+                this.currentIndex++;
+                this.showScreen('game');
+                this.loadQuestion();
+            }
+
+            finishStage(timeExpired = false) {
+                this.stopTimer();
+                const screen = document.getElementById('screen-complete');
+                ['dashboard', 'game', 'feedback'].forEach(id => {
+                    const el = document.getElementById(`screen-${id}`);
+                    if (el) el.classList.add('hidden');
+                });
+                screen.classList.remove('hidden');
+
+                const earnedXp = this.score * 25;
+                this.user.xp += earnedXp;
+
+                let nextStageId = null;
+
+                // Multiplication stages unlock strictly after a perfect 20/20.
+                if (this.currentStage && this.currentStage.id >= 101) {
+                    const currentMulIndex = MULTIPLICATION_STAGES.findIndex(s => s.id === this.currentStage.id);
+                    if (currentMulIndex !== -1 && this.score === this.questions.length) {
+                        const nextMul = MULTIPLICATION_STAGES[currentMulIndex + 1];
+                        if (nextMul) {
+                            nextMul.unlocked = true;
+                            nextStageId = nextMul.id;
+                        }
+                    }
+                }
+
+                if (this.currentStage && this.currentStage.id <= STAGES.length) {
+                    if (this.score >= Math.ceil(this.questions.length * 0.70)) {
+                        const nextIdx = STAGES.findIndex(s => s.id === this.currentStage.id + 1);
+                        if (nextIdx !== -1) {
+                            STAGES[nextIdx].unlocked = true;
+                            nextStageId = STAGES[nextIdx].id;
+                        }
+                    }
+                }
+
+                this.saveUserData();
+                this.renderMultiplicationStages();
+
+                document.getElementById('summary-score').innerText = `${this.score} / ${this.questions.length}`;
+                document.getElementById('summary-xp').innerText = `+${earnedXp} XP`;
+
+                const unlockMessage = document.getElementById('unlock-message');
+                if (unlockMessage) {
+                    if (this.currentStage && this.currentStage.id >= 101 && this.score === this.questions.length) {
+                        const idx = MULTIPLICATION_STAGES.findIndex(s => s.id === this.currentStage.id);
+                        const next = MULTIPLICATION_STAGES[idx + 1];
+                        unlockMessage.innerText = next
+                            ? `🎉 Perfect! ${next.title} is now unlocked.`
+                            : '🏆 Perfect! You completed all multiplication stages!';
+                    } else if (this.currentStage && this.currentStage.id >= 101) {
+                        unlockMessage.innerText = '🔒 You need a perfect 20/20 to unlock the next multiplication stage.';
+                    } else {
+                        unlockMessage.innerText = '';
+                    }
+                }
+
+                const nextBtn = document.getElementById('next-stage-btn');
+                if (nextStageId) {
+                    nextBtn.classList.remove('hidden');
+                    nextBtn.setAttribute('onclick', `app.startStage(${nextStageId})`);
+                    const nextStage = [...STAGES, ...MULTIPLICATION_STAGES].find(s => s.id === nextStageId);
+                    nextBtn.innerText = nextStage && nextStage.id >= 101
+                        ? `Proceed to ${nextStage.title} ➔`
+                        : `Proceed to Stage ${nextStageId} ➔`;
+                } else {
+                    nextBtn.classList.add('hidden');
+                }
+            }
+
+            restartStage() {
+                this.startStage(this.currentStage.id);
+            }
+
+            showLeaderboard() {
+                const listEl = document.getElementById('leaderboard-list');
+                const lb = JSON.parse(localStorage.getItem('mathquest_leaderboard_v3') || '[]');
+                
+                listEl.innerHTML = '';
+                if (lb.length === 0) {
+                    listEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">No leaderboard records yet. Complete stages to rank up!</p>`;
+                } else {
+                    lb.forEach((entry, idx) => {
+                        const row = document.createElement('div');
+                        row.className = `flex justify-between items-center p-3 rounded-xl border ${idx === 0 ? 'bg-amber-950/40 border-amber-600/50 text-amber-200' : 'bg-slate-900 border-slate-700 text-slate-300'}`;
+                        row.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-sm">#${idx + 1}</span>
+                                <div>
+                                    <p class="font-bold text-sm text-white">${entry.name}</p>
+                                    <p class="text-[10px] text-slate-400">${entry.grade} &bull; Section: ${entry.section}</p>
+                                </div>
+                            </div>
+                            <div class="font-bold text-amber-400 text-sm">
+                                ⚡ ${entry.xp} XP
+                            </div>
+                        `;
+                        listEl.appendChild(row);
+                    });
+                }
+                this.showScreen('leaderboard');
+            }
+
+            openTeacherLogin() {
+                const pin = prompt("Enter Teacher PIN:");
+                if (pin === "1234") {
+                    this.refreshTeacherDashboard();
+                    this.showScreen('teacher');
+                } else if (pin !== null) {
+                    alert("Incorrect Teacher PIN.");
+                }
+            }
+
+            refreshTeacherDashboard() {
+                const history = this.attemptHistory || [];
+                const students = {};
+                history.forEach(a => {
+                    const key = `${a.student}|${a.section}`;
+                    if (!students[key]) students[key] = { name: a.student, grade: a.grade, section: a.section, xp: 0, stages: new Set(), best: 0 };
+                    students[key].stages.add(a.stageId);
+                    students[key].best = Math.max(students[key].best, a.percentage);
+                });
+
+                // Include students who registered but have no completed attempt.
+                if (this.user.name) {
+                    const key = `${this.user.name}|${this.user.section}`;
+                    if (!students[key]) students[key] = { name: this.user.name, grade: this.user.grade, section: this.user.section, xp: this.user.xp, stages: new Set(), best: 0 };
+                    students[key].xp = Math.max(students[key].xp, this.user.xp);
+                }
+
+                const studentList = Object.values(students);
+                const avg = history.length ? Math.round(history.reduce((s, a) => s + a.percentage, 0) / history.length) : 0;
+                document.getElementById('teacher-student-count').innerText = studentList.length;
+                document.getElementById('teacher-attempt-count').innerText = history.length;
+                document.getElementById('teacher-average-score').innerText = `${avg}%`;
+                document.getElementById('teacher-total-xp').innerText = studentList.reduce((s, x) => s + (x.xp || 0), 0);
+
+                const tbody = document.getElementById('teacher-student-table');
+                tbody.innerHTML = studentList.length ? studentList.map(s => `
+                    <tr class="border-t border-slate-700 bg-slate-800/70">
+                        <td class="p-3 font-bold text-white">${s.name}</td>
+                        <td class="p-3 text-slate-400">${s.grade} / ${s.section}</td>
+                        <td class="p-3 text-center text-emerald-400 font-bold">${s.best}%</td>
+                        <td class="p-3 text-center text-indigo-300">${s.stages.size} / ${STAGES.length}</td>
+                        <td class="p-3 text-center text-amber-400 font-bold">${s.xp}</td>
+                    </tr>`).join('') :
+                    `<tr><td colspan="5" class="p-6 text-center text-slate-500">No student records yet.</td></tr>`;
+
+                // Add a detailed recent-attempt section below the table.
+                let detail = document.getElementById('teacher-attempt-details');
+                if (!detail) {
+                    detail = document.createElement('div');
+                    detail.id = 'teacher-attempt-details';
+                    detail.className = 'space-y-2 max-h-72 overflow-y-auto';
+                    tbody.parentElement.parentElement.appendChild(detail);
+                }
+                detail.innerHTML = history.slice().reverse().slice(0, 50).map(a => `
+                    <div class="flex flex-wrap justify-between gap-2 bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs">
+                        <span class="font-bold text-white">${a.student} — ${a.stageTitle}</span>
+                        <span class="text-indigo-300">${a.score}/${a.total} (${a.percentage}%)</span>
+                        <span class="text-slate-500">${a.date}${a.timeExpired ? ' • Time expired' : ''}</span>
+                    </div>`).join('') || '<p class="text-xs text-slate-500">No attempts recorded.</p>';
+            }
+
+            exportTeacherReport() {
+                const rows = [['Student','Grade','Section','Stage','Score','Total','Percentage','Time Expired','Date']];
+                (this.attemptHistory || []).forEach(a => rows.push([a.student,a.grade,a.section,a.stageTitle,a.score,a.total,a.percentage + '%',a.timeExpired ? 'Yes' : 'No',a.date]));
+                const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'MathQuest_Teacher_Report.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            clearClassRecords() {
+                if (!confirm("Clear all recorded student attempts and leaderboard records on this browser?")) return;
+                this.attemptHistory = [];
+                localStorage.removeItem('mathquest_leaderboard_v3');
+                this.saveUserData();
+                this.refreshTeacherDashboard();
+            }
+
+            // Group Activity Methods
+            openGroupModal() {
+                this.showScreen('group-config');
+            }
+
+            renderGroupStageSelector() {
+                const select = document.getElementById('group-stage');
+                if (!select) return;
+                const allStages = [...STAGES, ...MULTIPLICATION_STAGES];
+                const playable = allStages.filter(s => s.unlocked);
+                if (!this.groupStage || !playable.some(s => s.id === this.groupStage.id)) {
+                    this.groupStage = playable[0] || STAGES[0];
+                }
+                select.innerHTML = allStages.map(s =>
+                    `<option value="${s.id}" ${s.unlocked ? '' : 'disabled'} ${s.id === this.groupStage.id ? 'selected' : ''}>${s.title}${s.unlocked ? ' • Playable' : ' • 🔒 Locked'}</option>`
+                ).join('');
+                select.onchange = () => {
+                    const selected = allStages.find(s => s.id === Number(select.value) && s.unlocked);
+                    if (selected) this.groupStage = selected;
+                };
+            }
+
+            renderMemberInputs() {
+                const count = parseInt(document.getElementById('group-count').value) || 2;
+                const container = document.getElementById('member-inputs-container');
+                container.innerHTML = '';
+                for (let i = 1; i <= count; i++) {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <input type="text" id="member-name-${i}" placeholder="Member ${i} Full Name" required
+                            class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-white outline-none text-xs">
+                    `;
+                    container.appendChild(div);
+                }
+            }
+
+            startGroupActivity() {
+                const count = parseInt(document.getElementById('group-count').value) || 2;
+                this.groupMembers = [];
+                for (let i = 1; i <= count; i++) {
+                    const nameInput = document.getElementById(`member-name-${i}`);
+                    if (nameInput && nameInput.value.trim()) {
+                        this.groupMembers.push(nameInput.value.trim());
+                    }
+                }
+                if (this.groupMembers.length === 0) {
+                    alert("Please enter at least one group member name.");
+                    return;
+                }
+
+                const selectedStageId = Number(document.getElementById('group-stage')?.value);
+                const allStages = [...STAGES, ...MULTIPLICATION_STAGES];
+                const selectedStage = allStages.find(s => s.id === selectedStageId && s.unlocked);
+                this.groupStage = selectedStage || this.groupStage || STAGES[0];
+
+                this.groupRound = 1;
+                this.groupData = {};
+                this.groupSubmitted = {};
+                this.groupMembers.forEach(name => {
+                    this.groupData[name] = { score: 0, currentQ: this.generateGroupQuestion() };
+                     this.groupSubmitted[name] = false;
+                });
+
+                this.showScreen('group-game');
+                this.renderGroupTracks();
+            }
+
+            generateGroupQuestion() {
+                return this.createSingleQuestion(this.groupStage || STAGES[0]);
+            }
+
+            renderGroupTracks() {
+                document.getElementById('group-round').innerText = this.groupRound;
+                const groupStageTitle = document.getElementById('group-stage-title');
+                if (groupStageTitle) groupStageTitle.innerText = this.groupStage ? this.groupStage.title : 'Stage';
+                const container = document.getElementById('group-tracks-container');
+                container.innerHTML = '';
+
+                this.groupMembers.forEach((name, idx) => {
+                    const q = this.groupData[name].currentQ;
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-800/90 border border-slate-700 rounded-2xl p-4 shadow-lg space-y-3";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                            <span class="font-bold text-indigo-300 text-sm">👤 ${name}</span>
+                            <span class="text-xs font-bold text-amber-400">Score: ${this.groupData[name].score}</span>
+                        </div>
+                        <div class="text-center font-mono text-xl font-bold py-2">
+                            <div>${q.num1}</div>
+                            <div class="border-b border-slate-600 pb-1 flex justify-between px-6">
+                                <span class="text-indigo-400">${q.displayType}</span>
+                                <span>${q.num2}</span>
+                            </div>
+                        </div>
+                        <form onsubmit="app.submitGroupAnswer(event, '${name}')" class="flex gap-2">
+                            <input type="number" step="any" id="group-input-${idx}" placeholder="Answer..." required
+                                class="w-full bg-slate-900 border border-slate-600 focus:border-indigo-500 rounded-xl px-3 py-2 text-center text-sm font-bold text-white outline-none">
+                            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition">
+                                Submit
+                            </button>
+                        </form>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            submitGroupAnswer(e, name) {
+                e.preventDefault();
+                if (this.groupSubmitted[name]) return;
+                const memberIdx = this.groupMembers.indexOf(name);
+                const inputEl = document.getElementById(`group-input-${memberIdx}`);
+                const val = parseFloat(inputEl.value);
+                if (Number.isNaN(val)) return;
+                const q = this.groupData[name].currentQ;
+
+                if (Math.abs(val - q.answer) < 0.001) {
+                    soundEffect.playCorrect();
+                    this.groupData[name].score++;
+                    this.groupSubmitted[name] = true;
+                    inputEl.disabled = true;
+                    alert(`${name} got it correct! 🎉`);
+                } else {
+                    soundEffect.playWrong();
+                    this.groupSubmitted[name] = true;
+                    inputEl.disabled = true;
+                    alert(`Incorrect, ${name}. The correct answer was ${q.answer}.`);
+                }
+
+                const allSubmitted = this.groupMembers.every(m => this.groupSubmitted[m]);
+                if (!allSubmitted) {
+                    this.renderGroupTracks();
+                    return;
+                }
+
+                this.groupRound++;
+                if (this.groupRound > 20) {
+                    alert("Group Challenge Completed! Great teamwork!");
+                    this.showScreen('dashboard');
+                } else {
+                    this.groupMembers.forEach(m => {
+                        this.groupData[m].currentQ = this.generateGroupQuestion();
+                        this.groupSubmitted[m] = false;
+                    });
+                    this.renderGroupTracks();
+                }
+            }
+
+            // Scratchpad Logic (Expanded Height)
+            initScratchpad() {
+                setTimeout(() => {
+                    const canvas = document.getElementById('scratch-canvas');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = canvas.parentElement.clientWidth;
+                    canvas.height = 320;
+
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 3;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+
+                    let drawing = false;
+
+                    const getPos = (e) => {
+                        const rect = canvas.getBoundingClientRect();
+                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                        return {
+                            x: clientX - rect.left,
+                            y: clientY - rect.top
+                        };
+                    };
+
+                    canvas.onmousedown = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+                    canvas.onmousemove = (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+                    canvas.onmouseup = () => { drawing = false; };
+                    canvas.onmouseleave = () => { drawing = false; };
+
+                    canvas.ontouchstart = (e) => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); };
+                    canvas.ontouchmove = (e) => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+                    canvas.ontouchend = () => { drawing = false; };
+                }, 300);
+            }
+
+            toggleScratchpad() {
+                const container = document.getElementById('scratchpad-container');
+                container.classList.toggle('hidden');
+                if (!container.classList.contains('hidden')) {
+                    this.initScratchpad();
+                }
+            }
+
+            clearScratchpad() {
+                const canvas = document.getElementById('scratch-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        const app = new MathApp();
+    </script>
+<script>
+        if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+        }
+    </script>
+</body>
+</html>
