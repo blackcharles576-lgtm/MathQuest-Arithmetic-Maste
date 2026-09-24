@@ -1,0 +1,10 @@
+{
+  "name": "MathQuest: Arithmetic Master",
+  "short_name": "MathQuest",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#17122f",
+  "description": "Progressive arithmetic practice with stages, multiplication, and group activities.",
+  "icons": []
+}
